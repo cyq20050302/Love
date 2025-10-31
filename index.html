@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<title>给萌萌的道歉信 💗</title>
 	<script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
 	<style>
@@ -12,15 +12,15 @@
 			height: 100%;
 			margin: 0;
 			font-family: "微软雅黑", "PingFang SC", "Helvetica Neue", Arial;
+			-webkit-font-smoothing: antialiased;
+			overflow: hidden;
 		}
 
 		body {
 			background: radial-gradient(circle at 20% 20%, #fff0f6 0%, #ffeef8 18%, #fffaf0 50%, #fff 100%);
-			overflow: hidden;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			-webkit-font-smoothing: antialiased;
 		}
 
 		#app {
@@ -111,30 +111,47 @@
 			color: white;
 			background: linear-gradient(180deg, #ff7aa0, #ff4d7a);
 			box-shadow: 0 6px 20px rgba(255, 80, 120, 0.3);
-			transition: transform 0.2s;
+			transition: transform 0.2s, left 0.2s, top 0.2s;
 			z-index: 50;
+			touch-action: manipulation;
 		}
 
 		#yesBtn {
 			left: 40%;
-			bottom: 60px;
+			bottom: 8%;
 		}
 
 		#noBtn {
 			left: 60%;
-			bottom: 60px;
-			position: absolute;
+			bottom: 8%;
 		}
 
-		@media(max-width:520px) {
-			.message {
-				font-size: 18px;
-				top: 26px;
+		@media (max-width: 1024px) {
+			.btn {
+				font-size: 16px;
+				padding: 10px 18px;
+			}
+		}
+
+		@media (max-width: 520px) {
+			#yesBtn {
+				left: 25%;
+				bottom: 6%;
+			}
+
+			#noBtn {
+				left: 55%;
+				bottom: 6%;
 			}
 
 			.btn {
-				font-size: 16px;
-				padding: 10px 16px;
+				font-size: 14px;
+				padding: 8px 14px;
+			}
+
+			.message {
+				font-size: 18px;
+				top: 26px;
 			}
 		}
 	</style>
@@ -146,11 +163,11 @@
 			给最可爱的 <span style="color:#ff2e6f">萌萌</span>：<br />
 			<div class="sub">希望这份爱意能飘进你的心里 💞</div>
 		</div>
+
+		<button class="btn" id="yesBtn">原谅我</button>
+		<button class="btn" id="noBtn">不原谅</button>
+
 		<div class="hint">（甜甜的爱心弹幕会一直出现哦💗）</div>
-
-		<button class="btn" id="yesBtn">原谅我 💗</button>
-		<button class="btn" id="noBtn">不原谅 😭</button>
-
 		<canvas id="c"></canvas>
 	</div>
 
@@ -178,7 +195,9 @@
 				pos[i * 3 + 1] = (Math.random() - 0.5) * 120;
 				pos[i * 3 + 2] = Math.sin(t) * r * (0.6 + Math.random() * 0.6);
 				const col = new THREE.Color().setHSL(0.95 + Math.random() * 0.1, 0.8, 0.6 + Math.random() * 0.2);
-				colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+				colors[i * 3] = col.r;
+				colors[i * 3 + 1] = col.g;
+				colors[i * 3 + 2] = col.b;
 			}
 			geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 			geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -201,7 +220,6 @@
 
 		/* === 自动持续弹幕 === */
 		const app = document.getElementById('app');
-
 		const messages = [
 			"萌萌我错了😭", "我真的好想你💞", "我会改的🥺", "不气啦好不好~", "请再笑一次😳",
 			"保持好心情", "你是最可爱的💗", "每天都想见你👀", "我想一直陪着你", "我会做更好的自己✨", "原谅我嘛💋",
@@ -236,21 +254,22 @@
 			setTimeout(() => div.remove(), 10000);
 		}
 
-		// 自动持续生成弹幕（每 200ms 出一个）
+		// 自动持续生成弹幕
 		setInterval(createBubble, 200);
 
-		/* === 按钮事件 === */
+		/* === 按钮逻辑 === */
 		const yesBtn = document.getElementById('yesBtn');
 		const noBtn = document.getElementById('noBtn');
 
 		yesBtn.addEventListener('click', () => {
-			alert("谢谢萌萌原谅我！🥰💞");
+			alert("谢谢萌萌原谅我 💖");
 		});
 
-		// 不原谅按钮会随机乱跳
+		// 不原谅按钮乱跳
 		function moveNoBtn() {
-			const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-			const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+			const padding = 10;
+			const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding * 2) + padding;
+			const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding * 2) + padding;
 			noBtn.style.left = x + 'px';
 			noBtn.style.top = y + 'px';
 		}
@@ -258,7 +277,7 @@
 		noBtn.addEventListener('mouseenter', moveNoBtn);
 		noBtn.addEventListener('touchstart', moveNoBtn);
 
-		/* 自适应 */
+		/* 自适应窗口 */
 		window.addEventListener('resize', () => {
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			camera.aspect = window.innerWidth / window.innerHeight;
