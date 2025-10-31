@@ -72,6 +72,7 @@
 		#denyBtn {
 			left: 50%;
 			transform: translateX(15px);
+			white-space: nowrap;
 		}
 
 		.btn:hover {
@@ -305,11 +306,10 @@
 				Math.abs(randomY - btnRect.top) < 150
 			);
 
-			// 添加平滑过渡效果
-			denyBtn.style.transition = "left 0.3s ease-out, top 0.3s ease-out, transform 0.3s ease";
+			// 添加平滑过渡效果，不改变 transform
+			denyBtn.style.transition = "left 0.3s ease-out, top 0.3s ease-out";
 			denyBtn.style.left = `${randomX}px`;
 			denyBtn.style.top = `${randomY}px`;
-			denyBtn.style.transform = "none";
 
 			setTimeout(() => {
 				isRunningAway = false;
