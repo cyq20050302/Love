@@ -100,10 +100,41 @@
 			height: 100%;
 		}
 
+		/* 按钮样式 */
+		.btn {
+			position: absolute;
+			padding: 12px 22px;
+			border-radius: 28px;
+			border: none;
+			font-size: 18px;
+			cursor: pointer;
+			color: white;
+			background: linear-gradient(180deg, #ff7aa0, #ff4d7a);
+			box-shadow: 0 6px 20px rgba(255, 80, 120, 0.3);
+			transition: transform 0.2s;
+			z-index: 50;
+		}
+
+		#yesBtn {
+			left: 40%;
+			bottom: 60px;
+		}
+
+		#noBtn {
+			left: 60%;
+			bottom: 60px;
+			position: absolute;
+		}
+
 		@media(max-width:520px) {
 			.message {
 				font-size: 18px;
 				top: 26px;
+			}
+
+			.btn {
+				font-size: 16px;
+				padding: 10px 16px;
 			}
 		}
 	</style>
@@ -113,10 +144,13 @@
 	<div id="app">
 		<div class="message">
 			给最可爱的 <span style="color:#ff2e6f">萌萌</span>：<br />
-			<!-- 我真的知道错了，请原谅我 🥺<br /> -->
 			<div class="sub">希望这份爱意能飘进你的心里 💞</div>
 		</div>
 		<div class="hint">（甜甜的爱心弹幕会一直出现哦💗）</div>
+
+		<button class="btn" id="yesBtn">原谅我 💗</button>
+		<button class="btn" id="noBtn">不原谅 😭</button>
+
 		<canvas id="c"></canvas>
 	</div>
 
@@ -170,10 +204,10 @@
 
 		const messages = [
 			"萌萌我错了😭", "我真的好想你💞", "我会改的🥺", "不气啦好不好~", "请再笑一次😳",
-			"保持好心情", "你是最可爱的💗", "每天都想见你👀", "我想一直陪着你","我会做更好的自己✨", "原谅我嘛💋",
+			"保持好心情", "你是最可爱的💗", "每天都想见你👀", "我想一直陪着你", "我会做更好的自己✨", "原谅我嘛💋",
 			"我想抱抱你🤗", "我超喜欢你💘", "没有你不行💔", "让我们重新开始吧🌸",
 			"你笑的时候全世界都亮了✨", "对不起，对不起，对不起🙏", "你是我最特别的人💖",
-			, "有你在就足够了💞", "我想你想到爆炸💥", "我知错啦🥹", "气消一点，我抱抱🤗"
+			"有你在就足够了💞", "我想你想到爆炸💥", "我知错啦🥹", "气消一点，我抱抱🤗"
 		];
 
 		const colors = [
@@ -202,8 +236,27 @@
 			setTimeout(() => div.remove(), 10000);
 		}
 
-		// 自动持续生成弹幕（每 400ms 出一个）
-		setInterval(createBubble, 100);
+		// 自动持续生成弹幕（每 200ms 出一个）
+		setInterval(createBubble, 200);
+
+		/* === 按钮事件 === */
+		const yesBtn = document.getElementById('yesBtn');
+		const noBtn = document.getElementById('noBtn');
+
+		yesBtn.addEventListener('click', () => {
+			alert("谢谢萌萌原谅我！🥰💞");
+		});
+
+		// 不原谅按钮会随机乱跳
+		function moveNoBtn() {
+			const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+			const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+			noBtn.style.left = x + 'px';
+			noBtn.style.top = y + 'px';
+		}
+
+		noBtn.addEventListener('mouseenter', moveNoBtn);
+		noBtn.addEventListener('touchstart', moveNoBtn);
 
 		/* 自适应 */
 		window.addEventListener('resize', () => {
