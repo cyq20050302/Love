@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<title>给萌萌的道歉信 💗</title>
 	<script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
 	<style>
@@ -12,12 +12,11 @@
 			height: 100%;
 			margin: 0;
 			font-family: "微软雅黑", "PingFang SC", "Helvetica Neue", Arial;
-			-webkit-font-smoothing: antialiased;
-			overflow: hidden;
 		}
 
 		body {
 			background: radial-gradient(circle at 20% 20%, #fff0f6 0%, #ffeef8 18%, #fffaf0 50%, #fff 100%);
+			overflow: hidden;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -60,7 +59,6 @@
 			opacity: .9;
 		}
 
-		/* 弹幕气泡 */
 		.bubble {
 			position: absolute;
 			padding: 10px 18px;
@@ -100,58 +98,69 @@
 			height: 100%;
 		}
 
-		/* 按钮样式 */
-		.btn {
+		.btn-container {
 			position: absolute;
-			padding: 12px 22px;
-			border-radius: 28px;
+			left: 50%;
+			bottom: 40px;
+			transform: translateX(-50%);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 12px; /* 按钮间距 */
+			z-index: 40;
+		}
+
+		.btn {
+			background: linear-gradient(180deg, #ff7aa0, #ff4d7a);
+			color: white;
 			border: none;
+			padding: 14px 24px;
+			border-radius: 28px;
 			font-size: 18px;
 			cursor: pointer;
-			color: white;
-			background: linear-gradient(180deg, #ff7aa0, #ff4d7a);
-			box-shadow: 0 6px 20px rgba(255, 80, 120, 0.3);
-			transition: transform 0.2s, left 0.2s, top 0.2s;
-			z-index: 50;
+			box-shadow: 0 10px 30px rgba(255, 80, 120, 0.25);
+			transition: transform .15s, box-shadow .15s;
 			touch-action: manipulation;
 		}
+		.btn:active { transform: scale(.97); }
 
-		#yesBtn {
-			left: 40%;
-			bottom: 8%;
+		#forgiveBtn {
+			margin-bottom: 10px;
 		}
 
-		#noBtn {
-			left: 60%;
-			bottom: 8%;
+		#denyBtn {
+			margin-top: 10px;
 		}
 
-		@media (max-width: 1024px) {
-			.btn {
-				font-size: 16px;
-				padding: 10px 18px;
-			}
+		.big-note {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 48px;
+			color: #ff2e6f;
+			font-weight: 800;
+			opacity: 0;
+			z-index: 45;
+			text-shadow: 0 6px 30px rgba(255, 60, 110, 0.25);
+			transition: opacity 1.2s ease;
+			pointer-events: none;
 		}
 
-		@media (max-width: 520px) {
-			#yesBtn {
-				left: 25%;
-				bottom: 6%;
-			}
-
-			#noBtn {
-				left: 55%;
-				bottom: 6%;
-			}
-
-			.btn {
-				font-size: 14px;
-				padding: 8px 14px;
-			}
-
+		@media(max-width:520px) {
 			.message {
 				font-size: 18px;
 				top: 26px;
+			}
+
+			.btn {
+				bottom: 38px;
+				font-size: 16px;
+				padding: 12px 18px;
+			}
+
+			.big-note {
+				font-size: 36px;
 			}
 		}
 	</style>
@@ -163,16 +172,17 @@
 			给最可爱的 <span style="color:#ff2e6f">萌萌</span>：<br />
 			<div class="sub">希望这份爱意能飘进你的心里 💞</div>
 		</div>
-
-		<button class="btn" id="yesBtn">原谅我</button>
-		<button class="btn" id="noBtn">不原谅</button>
-
+	<div class="btn-container">
+		<button class="btn" id="forgiveBtn">原谅我 ❤</button>
+		<button class="btn" id="denyBtn">不原谅 😤</button>
+	</div>
 		<div class="hint">（甜甜的爱心弹幕会一直出现哦💗）</div>
+		<div class="big-note" id="loveText">🫶🏻</div>
 		<canvas id="c"></canvas>
 	</div>
 
 	<script>
-		/* === Three.js 粒子背景 === */
+		// ========== Three.js 背景粒子 ==========
 		const canvas = document.getElementById('c');
 		const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 		renderer.setPixelRatio(window.devicePixelRatio);
@@ -181,8 +191,7 @@
 		scene.fog = new THREE.FogExp2(0xfffbfc, 0.0008);
 		const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 2000);
 		camera.position.set(0, 10, 120);
-		const ambient = new THREE.AmbientLight(0xffe6f0, 0.9);
-		scene.add(ambient);
+		scene.add(new THREE.AmbientLight(0xffe6f0, 0.9));
 
 		function createParticles(count = 600) {
 			const geom = new THREE.BufferGeometry();
@@ -195,19 +204,15 @@
 				pos[i * 3 + 1] = (Math.random() - 0.5) * 120;
 				pos[i * 3 + 2] = Math.sin(t) * r * (0.6 + Math.random() * 0.6);
 				const col = new THREE.Color().setHSL(0.95 + Math.random() * 0.1, 0.8, 0.6 + Math.random() * 0.2);
-				colors[i * 3] = col.r;
-				colors[i * 3 + 1] = col.g;
-				colors[i * 3 + 2] = col.b;
+				colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
 			}
 			geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 			geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 			const mat = new THREE.PointsMaterial({ size: 3.5, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false });
 			const ps = new THREE.Points(geom, mat);
-			scene.add(ps);
-			return ps;
+			scene.add(ps); return ps;
 		}
 		const particles = createParticles();
-
 		function animate() {
 			requestAnimationFrame(animate);
 			const pos = particles.geometry.attributes.position.array;
@@ -218,7 +223,7 @@
 		}
 		animate();
 
-		/* === 自动持续弹幕 === */
+		// ========== 弹幕系统 ==========
 		const app = document.getElementById('app');
 		const messages = [
 			"萌萌我错了😭", "我真的好想你💞", "我会改的🥺", "不气啦好不好~", "请再笑一次😳",
@@ -227,57 +232,108 @@
 			"你笑的时候全世界都亮了✨", "对不起，对不起，对不起🙏", "你是我最特别的人💖",
 			"有你在就足够了💞", "我想你想到爆炸💥", "我知错啦🥹", "气消一点，我抱抱🤗"
 		];
-
-		const colors = [
-			"#ff7aa0", "#ff4d7a", "#ff6f9a", "#ff92b2", "#ffb3c9", "#ffa1d2",
-			"#ff8cc6", "#ff5c8a", "#ffb6b9", "#ffaad4", "#ffc6e0", "#ff7eb9",
-			"#ff9a9e", "#fcbad3", "#f6a5c0"
-		];
+		const colors = ['#ff7aa0', '#ff4d7a', '#ff6f9a', '#ff92b2', '#ffb3c9', '#ffa1d2', '#ff8cc6', '#ff5c8a', '#ffb6b9', '#ffaad4', '#ffc6e0', '#ff7eb9', '#ff9a9e', '#fcbad3', '#f6a5c0'];
 
 		function createBubble() {
 			const div = document.createElement('div');
 			div.className = 'bubble';
 			div.textContent = messages[Math.floor(Math.random() * messages.length)];
 			div.style.background = colors[Math.floor(Math.random() * colors.length)];
-
 			const x = Math.random() * window.innerWidth;
 			const y = Math.random() * window.innerHeight;
-			div.style.left = x + 'px';
-			div.style.top = y + 'px';
-
+			div.style.left = x + 'px'; div.style.top = y + 'px';
 			const tx = (Math.random() - 0.5) * 800 + 'px';
 			const ty = (Math.random() - 0.5) * 600 + 'px';
 			div.style.setProperty('--tx', tx);
 			div.style.setProperty('--ty', ty);
-
 			app.appendChild(div);
 			setTimeout(() => div.remove(), 10000);
 		}
-
-		// 自动持续生成弹幕
+		// 自动弹幕
 		setInterval(createBubble, 200);
 
-		/* === 按钮逻辑 === */
-		const yesBtn = document.getElementById('yesBtn');
-		const noBtn = document.getElementById('noBtn');
-
-		yesBtn.addEventListener('click', () => {
-			alert("谢谢萌萌原谅我 💖");
-		});
-
-		// 不原谅按钮乱跳
-		function moveNoBtn() {
-			const padding = 10;
-			const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding * 2) + padding;
-			const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding * 2) + padding;
-			noBtn.style.left = x + 'px';
-			noBtn.style.top = y + 'px';
+		// ========== 烟花 ==========
+		const fireworkGroup = new THREE.Group(); scene.add(fireworkGroup);
+		function spawnFirework(x = 0, y = 0, z = 0, colorHex = 0xff7aa0, power = 80) {
+			const count = 120 + Math.floor(Math.random() * 80);
+			const geom = new THREE.BufferGeometry();
+			const pos = new Float32Array(count * 3); const vel = [];
+			const colorsArr = new Float32Array(count * 3);
+			for (let i = 0; i < count; i++) {
+				pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+				const dir = new THREE.Vector3((Math.random() * 2 - 1), (Math.random() * 2 - 0.3), (Math.random() * 2 - 1)).normalize();
+				const spd = 0.8 + Math.random() * 1.6;
+				vel.push(dir.multiplyScalar(spd * (power / 60)));
+				const c = new THREE.Color(colorHex);
+				c.offsetHSL((Math.random() - 0.5) * 0.08, (Math.random() - 0.2) * 0.3, (Math.random() - 0.2) * 0.2);
+				colorsArr[i * 3] = c.r; colorsArr[i * 3 + 1] = c.g; colorsArr[i * 3 + 2] = c.b;
+			}
+			geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+			geom.setAttribute('color', new THREE.BufferAttribute(colorsArr, 3));
+			const mat = new THREE.PointsMaterial({ size: 4.5, vertexColors: true, transparent: true });
+			const points = new THREE.Points(geom, mat);
+			points.userData = { vel, life: 1.0 };
+			fireworkGroup.add(points);
+			setTimeout(() => { fireworkGroup.remove(points); geom.dispose(); mat.dispose(); }, 2200);
 		}
 
-		noBtn.addEventListener('mouseenter', moveNoBtn);
-		noBtn.addEventListener('touchstart', moveNoBtn);
+		// ========== 点击按钮事件 ==========
+		const forgiveBtn = document.getElementById('forgiveBtn');
+		const denyBtn = document.getElementById('denyBtn');
+		const loveText = document.getElementById('loveText');
 
-		/* 自适应窗口 */
+		forgiveBtn.addEventListener('click', () => {
+			// 烟花
+			for (let i = 0; i < 6; i++) {
+				spawnFirework(0, 0, 0, 0xff4d7a, 80);
+			}
+			// 弹幕飞心
+			heartifyBubbles();
+		});
+
+		denyBtn.addEventListener('click', () => {
+			const btn = denyBtn;
+			const x = Math.random() * (window.innerWidth - 60);
+			const y = Math.random() * (window.innerHeight - 60);
+			btn.style.position = 'absolute'; btn.style.left = x + 'px'; btn.style.top = y + 'px';
+		});
+
+		// ========== 弹幕飞心 ==========
+		function heartifyBubbles() {
+			const allBubbles = document.querySelectorAll('.bubble');
+			const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+			const a = 16; // 心形公式参数
+			allBubbles.forEach((b, i) => {
+				const t = i * 0.3;
+				const x = a * Math.pow(Math.sin(t), 3);
+				const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+				const targetX = cx + x * 15;
+				const targetY = cy + y * 15;
+				const rect = b.getBoundingClientRect();
+				const startX = rect.left + rect.width / 2;
+				const startY = rect.top + rect.height / 2;
+				const dx = targetX - startX, dy = targetY - startY;
+				b.style.transition = 'transform 2s ease-in-out';
+				b.style.transform = `translate(${dx}px,${dy}px) scale(1.2)`;
+			});
+			setTimeout(() => { loveText.style.opacity = 1; }, 2000);
+		}
+
+		// ========== 烟花动画更新 ==========
+		function animateFireworks() {
+			requestAnimationFrame(animateFireworks);
+			fireworkGroup.children.forEach(points => {
+				const posArr = points.geometry.attributes.position.array;
+				points.userData.vel.forEach((v, i) => {
+					posArr[i * 3] += v.x; posArr[i * 3 + 1] += v.y; posArr[i * 3 + 2] += v.z;
+					v.y -= 0.03; // 重力
+				});
+				points.geometry.attributes.position.needsUpdate = true;
+			});
+		}
+		animateFireworks();
+
+		// ========== 自适应 ==========
 		window.addEventListener('resize', () => {
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			camera.aspect = window.innerWidth / window.innerHeight;
