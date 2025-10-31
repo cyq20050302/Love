@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>给萌萌的道歉信 💗</title>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+	<style>
+		html,
+		body {
+			height: 100%;
+			margin: 0;
+			font-family: "微软雅黑", "PingFang SC", "Helvetica Neue", Arial;
+		}
+
+		body {
+			background: radial-gradient(circle at 20% 20%, #fff0f6 0%, #ffeef8 18%, #fffaf0 50%, #fff 100%);
+			overflow: hidden;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		#app {
+			width: 100%;
+			height: 100%;
+			position: relative;
+			touch-action: none;
+		}
+
+		.message {
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+			top: 40px;
+			text-align: center;
+			color: #ff3b6f;
+			font-weight: 700;
+			font-size: 22px;
+			text-shadow: 0 2px 10px rgba(255, 80, 120, 0.25);
+			z-index: 30;
+		}
+
+		.sub {
+			color: #ff6f9a;
+			font-weight: 500;
+			font-size: 14px;
+			margin-top: 6px;
+		}
+
+		.hint {
+			position: absolute;
+			right: 16px;
+			bottom: 14px;
+			z-index: 50;
+			color: #ff7aa0;
+			font-size: 12px;
+			opacity: .9;
+		}
+
+		/* 弹幕气泡 */
+		.bubble {
+			position: absolute;
+			padding: 10px 18px;
+			border-radius: 50px;
+			font-size: 16px;
+			color: white;
+			white-space: nowrap;
+			opacity: 0;
+			transform: scale(0.5);
+			animation: fly 10s linear forwards;
+		}
+
+		@keyframes fly {
+			0% {
+				opacity: 0;
+				transform: scale(0.5) translate(0, 0);
+			}
+
+			10% {
+				opacity: 1;
+				transform: scale(1) translate(0, 0);
+			}
+
+			90% {
+				opacity: 1;
+			}
+
+			100% {
+				opacity: 0;
+				transform: scale(0.7) translate(var(--tx), var(--ty));
+			}
+		}
+
+		canvas {
+			display: block;
+			width: 100%;
+			height: 100%;
+		}
+
+		@media(max-width:520px) {
+			.message {
+				font-size: 18px;
+				top: 26px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<div class="message">
+			给最可爱的 <span style="color:#ff2e6f">萌萌</span>：<br />
+			<!-- 我真的知道错了，请原谅我 🥺<br /> -->
+			<div class="sub">希望这份爱意能飘进你的心里 💞</div>
+		</div>
+		<div class="hint">（甜甜的爱心弹幕会一直出现哦💗）</div>
+		<canvas id="c"></canvas>
+	</div>
+
+	<script>
+		/* === Three.js 粒子背景 === */
+		const canvas = document.getElementById('c');
+		const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		const scene = new THREE.Scene();
+		scene.fog = new THREE.FogExp2(0xfffbfc, 0.0008);
+		const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 2000);
+		camera.position.set(0, 10, 120);
+		const ambient = new THREE.AmbientLight(0xffe6f0, 0.9);
+		scene.add(ambient);
+
+		function createParticles(count = 600) {
+			const geom = new THREE.BufferGeometry();
+			const pos = new Float32Array(count * 3);
+			const colors = new Float32Array(count * 3);
+			for (let i = 0; i < count; i++) {
+				const t = Math.random() * Math.PI * 2;
+				const r = 80 + Math.random() * 60;
+				pos[i * 3] = Math.cos(t) * r * (0.6 + Math.random() * 0.6);
+				pos[i * 3 + 1] = (Math.random() - 0.5) * 120;
+				pos[i * 3 + 2] = Math.sin(t) * r * (0.6 + Math.random() * 0.6);
+				const col = new THREE.Color().setHSL(0.95 + Math.random() * 0.1, 0.8, 0.6 + Math.random() * 0.2);
+				colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+			}
+			geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+			geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+			const mat = new THREE.PointsMaterial({ size: 3.5, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false });
+			const ps = new THREE.Points(geom, mat);
+			scene.add(ps);
+			return ps;
+		}
+		const particles = createParticles();
+
+		function animate() {
+			requestAnimationFrame(animate);
+			const pos = particles.geometry.attributes.position.array;
+			for (let i = 1; i < pos.length; i += 3) pos[i] += Math.sin(Date.now() * 0.001 + i * 0.002) * 0.03;
+			particles.rotation.y += 0.0015;
+			particles.geometry.attributes.position.needsUpdate = true;
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		/* === 自动持续弹幕 === */
+		const app = document.getElementById('app');
+
+		const messages = [
+			"萌萌我错了😭", "我真的好想你💞", "我会改的🥺", "不气啦好不好~", "请再笑一次😳",
+			"保持好心情", "你是最可爱的💗", "每天都想见你👀", "我想一直陪着你","我会做更好的自己✨", "原谅我嘛💋",
+			"我想抱抱你🤗", "我超喜欢你💘", "没有你不行💔", "让我们重新开始吧🌸",
+			"你笑的时候全世界都亮了✨", "对不起，对不起，对不起🙏", "你是我最特别的人💖",
+			, "有你在就足够了💞", "我想你想到爆炸💥", "我知错啦🥹", "气消一点，我抱抱🤗"
+		];
+
+		const colors = [
+			"#ff7aa0", "#ff4d7a", "#ff6f9a", "#ff92b2", "#ffb3c9", "#ffa1d2",
+			"#ff8cc6", "#ff5c8a", "#ffb6b9", "#ffaad4", "#ffc6e0", "#ff7eb9",
+			"#ff9a9e", "#fcbad3", "#f6a5c0"
+		];
+
+		function createBubble() {
+			const div = document.createElement('div');
+			div.className = 'bubble';
+			div.textContent = messages[Math.floor(Math.random() * messages.length)];
+			div.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+			const x = Math.random() * window.innerWidth;
+			const y = Math.random() * window.innerHeight;
+			div.style.left = x + 'px';
+			div.style.top = y + 'px';
+
+			const tx = (Math.random() - 0.5) * 800 + 'px';
+			const ty = (Math.random() - 0.5) * 600 + 'px';
+			div.style.setProperty('--tx', tx);
+			div.style.setProperty('--ty', ty);
+
+			app.appendChild(div);
+			setTimeout(() => div.remove(), 10000);
+		}
+
+		// 自动持续生成弹幕（每 400ms 出一个）
+		setInterval(createBubble, 100);
+
+		/* 自适应 */
+		window.addEventListener('resize', () => {
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+		});
+	</script>
+</body>
+
+</html>
